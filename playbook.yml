@@ -1,0 +1,16 @@
+---
+- name: Install Foreman Server with Katello
+  hosts: foreman-server
+  become: true
+  gather_facts: true
+ 
+    #  pre_tasks:
+    #    - name: Install Foreman SELinux Package
+    #      ansible.builtin.dnf:
+    #        name: foreman-selinux
+    #        state: present
+  roles:
+    - theforeman.operations.foreman_repositories 
+    - theforeman.operations.puppet_repositories
+    - theforeman.operations.installer
+    - theforeman.operations.foreman_proxy_certs_generate
