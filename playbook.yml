@@ -9,8 +9,87 @@
     #      ansible.builtin.dnf:
     #        name: foreman-selinux
     #        state: present
+  tasks:
+    - name: "Setup Dns-Proxy for Domain"
+      theforeman.foreman.domain:
+        name: "localdomain"
+        description: "localdomain"
+        organizations:
+          - "Netways"
+        server_url: "https://foreman.localdomain"
+        username: "admin"
+        password: "admin"
+        dns_proxy: "foreman.localdomain"
+        state: present
+
+    - name: "Create Subnet foreman"
+      theforeman.foreman.subnet:
+        name: "foreman"
+        network_type: "IPv4"
+        network: "10.0.0.0"
+        cidr: "16"
+        mask: "255.255.0.0"
+        gateway: "10.0.0.1"
+        dns_primary: "10.0.0.2"
+        ipam: "DHCP"
+        boot_mode: "DHCP"
+        from_ip: "10.0.0.100"
+        to_ip: "10.0.0.200"
+        dhcp_proxy: "foreman.localdomain"
+        tftp_proxy: "foreman.localdomain"
+        dns_proxy: "foreman.localdomain"
+        domains:
+          - "localdomain"
+        server_url: "https://foreman.localdomain"
+        username: "admin"
+        password: "admin"
+        state: present
+
+    - name: "Copy private key SSH-Key to foreman user"
+      ansible.builtin.copy:
+        src: files/id_rsa
+        dest: /usr/share/foreman/.ssh/id_rsa
+
+    - name: "Add foreman-key to authorized keys for root user"
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', 'files/id_rsa.pub') }}"
+      delegate_to: localhost
+
+    - name: "Create libvirt compute resource"
+      theforeman.foreman.compute_resource:
+        name: "libvirt"
+        organizations:
+          - "Netways"
+        provider: "libvirt"
+        provider_params:
+          url: "qemu+ssh://root@host.localdomain/system"
+          display_type: "VNC"
+        server_url: "https://foreman.localdomain"
+        username: "admin"
+        password: "admin"
+        state: present
+    
+    - name: "Create Directory /var/www/html/pub/ubuntu"
+      ansible.builtin.file:
+        path: "/var/www/html/pub/ubuntu/24.04.1-amd64"
+        state: directory
+        mode: "0751"
+
+    - name: "Download Ubuntu 24.04 LTS iso"
+      ansible.builtin.get_url:
+        url: "https://releases.ubuntu.com/noble/ubuntu-24.04.1-live-server-amd64.iso" 
+        dest: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
+        mode: "0744"
+    
+
+    - name: "Mount Ubuntu Iso"
+      ansible.posix.mount:
+        src: "/var/www/html/pub/ubuntu/24.04.1-amd64-iso"
+        path: "/var/www/html/pub/ubuntu/24.04.1-amd64"
+        state: mounted
   roles:
     - theforeman.operations.foreman_repositories 
     - theforeman.operations.puppet_repositories
     - theforeman.operations.installer
-    - theforeman.operations.foreman_proxy_certs_generate

@@ -23,6 +23,6 @@ foreman_installer_options:
   - '--foreman-initial-organization "Netways"'
   - '--foreman-initial-admin-password admin'
   - '--tuning "development"'
-
-foreman_proxy_certs_generate_fqdn: "{{ ansible_fqdn }}"
+  - '--enable-foreman-compute-libvirt'
+    # foreman_proxy_certs_generate_fqdn: "{{ ansible_fqdn }}"
 
