@@ -65,7 +65,7 @@
         provider: "libvirt"
         provider_params:
           url: "qemu+ssh://root@host.localdomain/system"
-          display_type: "VNC"
+          display_type: "vnc"
         server_url: "https://foreman.localdomain"
         username: "admin"
         password: "admin"
@@ -73,22 +73,145 @@
     
     - name: "Create Directory /var/www/html/pub/ubuntu"
       ansible.builtin.file:
-        path: "/var/www/html/pub/ubuntu/24.04.1-amd64"
+        path: "/var/www/html/pub/ubuntu"
         state: directory
-        mode: "0751"
+        mode: "0755"
 
     - name: "Download Ubuntu 24.04 LTS iso"
       ansible.builtin.get_url:
         url: "https://releases.ubuntu.com/noble/ubuntu-24.04.1-live-server-amd64.iso" 
         dest: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
-        mode: "0744"
+        mode: "0755"
     
-
     - name: "Mount Ubuntu Iso"
       ansible.posix.mount:
-        src: "/var/www/html/pub/ubuntu/24.04.1-amd64-iso"
+        src: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
         path: "/var/www/html/pub/ubuntu/24.04.1-amd64"
+        fstype: "iso9660"
+        opts: ro,noauto
+        boot: false
         state: mounted
+
+    - name: "Create Symlink for ISO"
+      ansible.builtin.file:
+        src: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
+        dest: "/var/www/html/pub/ubuntu/24.04.1-x86_64.iso"
+        state: link
+  
+    - name: "Create Symlink for Directory"
+      ansible.builtin.file:
+        src: "/var/www/html/pub/ubuntu/24.04.1-amd64"
+        dest: "/var/www/html/pub/ubuntu/24.04.1-x86_64"
+        state: link
+
+    - name: "Create Operating System Architecture x86_64"
+      theforeman.foreman.architecture:
+        name: "x86_64"
+        server_url: "https://foreman.localdomain"
+        username: "admin"
+        password: "admin"
+        state: "present"
+
+    - name: "Create Operating System Ubuntu 24.04.1"
+      theforeman.foreman.operatingsystem:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        architectures: 
+          - "x86_64"
+        name: "Ubuntu"
+        release_name: "noble"
+        family: "Debian"
+        major: "24.04"
+        minor: "1"
+        description: "Ubuntu Noble Numbat Test"
+        password_hash: "SHA256"
+        ptables:
+          - "Preseed default autoinstall"
+        provisioning_templates: 
+          - "Preseed default finish"
+          - "Linux host_init_config default"
+          - "Preseed default iPXE"
+          - "Preseed default PXEGrub2"
+          - "Preseed default PXELinux Autoinstall"
+          - "Preseed Autoinstall cloud-init user data"
+        state: "present"
+
+    - name: "Create Installation Medium for Ubuntu 24.04.1"
+      theforeman.foreman.installation_medium:
+        name: "Ubuntu Autoinstall 2"
+        operatingsystems: 
+          - "Ubuntu Noble Numbat Test"
+        path: "http://foreman.localdomain/pub/ubuntu/$major.$minor-$arch"
+        os_family: "Debian"
+        organizations:
+          - "Netways"
+        server_url: "https://foreman.localdomain"
+        username: "admin"
+        password: "admin"
+        state: "present"
+
+    - name: "Create Association for Finish"
+      theforeman.foreman.os_default_template:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        template_kind: "finish"
+        provisioning_template: "Preseed default finish"
+        state: "present"
+
+    - name: "Create Association for Host initial configuration template"
+      theforeman.foreman.os_default_template:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        template_kind: "host_init_config"
+        provisioning_template: "Linux host_init_config default"
+        state: "present"
+
+    - name: "Create Association for iPXE template"
+      theforeman.foreman.os_default_template:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        template_kind: "iPXE"
+        provisioning_template: "Preseed default iPXE"
+        state: "present"
+
+    - name: "Create Association for PXEGrub2 template"
+      theforeman.foreman.os_default_template:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        template_kind: "PXEGrub2"
+        provisioning_template: "Preseed default PXEGrub2"
+        state: "present"
+          
+    - name: "Create Association for PXELinux template"
+      theforeman.foreman.os_default_template:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        template_kind: "PXELinux"
+        provisioning_template: "Preseed default PXELinux Autoinstall"
+        state: "present"
+
+    - name: "Create Association for User data template"
+      theforeman.foreman.os_default_template:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        template_kind: "user_data"
+        provisioning_template: "Preseed Autoinstall cloud-init user data"
+        state: "present"
+
+    
   roles:
     - theforeman.operations.foreman_repositories 
     - theforeman.operations.puppet_repositories
