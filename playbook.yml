@@ -47,8 +47,15 @@
 
     - name: "Copy private key SSH-Key to foreman user"
       ansible.builtin.copy:
-        src: files/id_rsa
-        dest: /usr/share/foreman/.ssh/id_rsa
+        src: "files/id_rsa"
+        dest: "/usr/share/foreman/.ssh/id_rsa"
+
+    - name: "Add host root@foreman.localdomain to known_hosts"
+      ansible.builtin.known_hosts:
+        path: "/usr/share/foreman/.ssh/known_hosts"
+        name: "host.localdomain"
+        hash_host: false
+        key: "{{ lookup('pipe', 'ssh-keyscan -H -t rsa host.localdomain') | trim }}"
 
     - name: "Add foreman-key to authorized keys for root user"
       ansible.posix.authorized_key:
@@ -66,6 +73,7 @@
         provider_params:
           url: "qemu+ssh://root@host.localdomain/system"
           display_type: "vnc"
+          set_console_password: "false"
         server_url: "https://foreman.localdomain"
         username: "admin"
         password: "admin"
@@ -211,6 +219,85 @@
         provisioning_template: "Preseed Autoinstall cloud-init user data"
         state: "present"
 
+          #    - name: "Update Compute Profile 1-Small"
+          #      theforeman.foreman.compute_profile:
+          #        name: "1-Small"
+          #        username: "admin"
+          #        password: "admin"
+          #        server_url: "https://foreman.localdomain"
+          #        compute_attributes:
+          #          - compute_resource: "libvirt"
+          #            vm_attrs:
+          #              nics_attributes:
+          #                0:
+          #                  type: "network"
+          #                  network: "foreman"
+          #                  bridge: "virbr1"
+          #                  interface: "virtio"
+                    #- name: "Create Host"
+                    #  theforeman.foreman.host:
+                    #    username: "admin"
+                    #    password: "admin"
+                    #    server_url: "https://foreman.localdomain"
+                    #    organization: "Netways"
+                    #    location: "Default Location"
+                    #    name: "test-ubuntu.localdomain"
+                    #    build: true
+                    #    architecture: "x86_64"
+                    #    compute_resource: "libvirt"
+                    #    operatingsystem: "Ubuntu Noble Numbat Test"
+                    #    provision_method: "build"
+                    #    content_source: "foreman.localdomain"
+                    #    ptable: "Preseed default autoinstall" 
+                    #    pxe_loader: "PXELinux BIOS"
+                    #    root_pass: "12345abc"
+                    #    compute_profile: "1-Small"
+                    #    domain: "localdomain"
+                    #    compute_attributes:
+                    #      cpus: "4"
+                    #      memory: "4096"
+                    #      type: "qcow2"
+                    #      start: true
+                    #    medium: "Ubuntu Autoinstall 2" 
+                    #    state: present
+
+    - name: "Create Test Host"
+      theforeman.foreman.host:
+        username: "admin"
+        password: "admin"
+        server_url: "https://foreman.localdomain"
+        location: "Default Location"
+        organization: "Netways"
+        name: "test-ubuntu.localdomain"
+        build: true
+        architecture: "x86_64"
+        content_source: "foreman.localdomain"
+        compute_resource: "libvirt"
+        provision_method: "build"
+        operatingsystem: "Ubuntu Noble Numbat Test"
+        ptable: "Preseed default autoinstall" 
+        pxe_loader: "PXELinux BIOS"
+        root_pass: "12345abc"
+        compute_profile: "1-Small"
+        domain: "localdomain"
+        compute_attributes:
+          cpus: "4"
+          memory: "4294967296"
+          start: "1"
+            #volumes_attributes: 
+            #  - pool_name: "default"
+            #    capacity: "10G"
+            #    allocation: "0G"
+            #    format_type: "qcow2" 
+        medium: "Ubuntu Autoinstall 2" 
+        interfaces_attributes:
+          - type: "interface"
+            compute_attributes:
+              type: "network"
+              network: "foreman"
+              model: "virtio"
+        state: present
+        subnet: "foreman"
     
   roles:
     - theforeman.operations.foreman_repositories 
