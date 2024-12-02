@@ -1,5 +1,10 @@
 ---
 
+username: "admin"
+password: "admin"
+server_url: "https://foreman.localdomain"
+organization: "Netways"
+
 foreman_repositories_version: "3.12"
 foreman_repositories_katello_version: "4.14"
 
