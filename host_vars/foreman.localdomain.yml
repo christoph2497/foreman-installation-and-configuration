@@ -2,3 +2,4 @@
 
 ansible_user: "root"
 ansible_password: "netways"
+root_password: "12345abc"

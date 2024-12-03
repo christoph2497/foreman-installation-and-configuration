@@ -15,10 +15,10 @@
         name: "localdomain"
         description: "localdomain"
         organizations:
-          - "Netways"
-        server_url: "https://foreman.localdomain"
-        username: "admin"
-        password: "admin"
+          - "{{ organization }}"
+        server_url: "{{ server_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
         dns_proxy: "foreman.localdomain"
         state: present
 
@@ -40,9 +40,9 @@
         dns_proxy: "foreman.localdomain"
         domains:
           - "localdomain"
-        server_url: "https://foreman.localdomain"
-        username: "admin"
-        password: "admin"
+        server_url: "{{ server_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
         state: present
 
     - name: "Copy private key SSH-Key to foreman user"
@@ -68,15 +68,15 @@
       theforeman.foreman.compute_resource:
         name: "libvirt"
         organizations:
-          - "Netways"
+          - "{{ organization }}"
         provider: "libvirt"
         provider_params:
           url: "qemu+ssh://root@host.localdomain/system"
           display_type: "vnc"
           set_console_password: "false"
-        server_url: "https://foreman.localdomain"
-        username: "admin"
-        password: "admin"
+        server_url: "{{ server_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
         state: present
     
           #    - name: "Create Directory /var/www/html/pub/ubuntu"
@@ -115,9 +115,9 @@
     - name: "Create Operating System Architecture x86_64"
       theforeman.foreman.architecture:
         name: "x86_64"
-        server_url: "https://foreman.localdomain"
-        username: "admin"
-        password: "admin"
+        server_url: "{{ server_url }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
         state: "present"
 
     - name: "Copy RedHat Manifest to Foreman Server"
@@ -127,19 +127,19 @@
 
     - name: "Upload the RedHat Developer Subscription for Individuals"
       theforeman.foreman.subscription_manifest:
-        username: "admin"
-        password: "admin"
-        server_url: "https://foreman.localdomain"
-        organization: "Netways"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        server_url: "{{ server_url }}"
+        organization: "{{ organization }}"
         state: present
         manifest_path: "/tmp/manifest.zip"
 
     - name: "Create Repository Set for RHEL 9"
       theforeman.foreman.repository_set:
-        username: "admin"
-        password: "admin"
-        server_url: "https://foreman.localdomain"
-        organization: "Netways"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        server_url: "{{ server_url }}"
+        organization: "{{ organization }}"
         product: "Red Hat Enterprise Linux for x86_64"
         label: "{{ item.label }}"
         repositories: "{{ item.repositories | default(omit) }}"
@@ -294,9 +294,9 @@
     - name: "Update Compute Profile 1-Small"
       theforeman.foreman.compute_profile:
         name: "1-Small"
-        username: "admin"
-        password: "admin"
-        server_url: "https://foreman.localdomain"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        server_url: "{{ server_url }}"
         compute_attributes:
           - compute_resource: "libvirt"
             vm_attrs:
@@ -333,7 +333,7 @@
         provision_method: "build"
         ptable: "Kickstart default" 
         pxe_loader: "PXELinux BIOS"
-        root_pass: "12345abc"
+        root_pass: "{{ root_password }}"
         compute_profile: "1-Small"
         domain: "localdomain"
         kickstart_repository: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS Kickstart 9.5"
