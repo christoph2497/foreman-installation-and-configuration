@@ -1,7 +1,5 @@
 ---
-
 collections:
+  - name: ansible.posix
   - name: theforeman.foreman
-    
   - name: theforeman.operations
-

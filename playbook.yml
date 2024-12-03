@@ -4,10 +4,10 @@
   become: true
   gather_facts: true
   roles:
-    - theforeman.operations.foreman_repositories 
+    - theforeman.operations.foreman_repositories
     - theforeman.operations.puppet_repositories
     - theforeman.operations.installer
- 
+
   tasks:
     - name: "Setup DNS-Proxy for Domain"
       theforeman.foreman.domain:
@@ -48,6 +48,9 @@
       ansible.builtin.copy:
         src: "files/id_rsa"
         dest: "/usr/share/foreman/.ssh/id_rsa"
+        mode: "0600"
+        owner: foreman
+        group: foreman
 
     - name: "Add host root@foreman.localdomain to known_hosts"
       ansible.builtin.known_hosts:
@@ -77,7 +80,7 @@
         username: "{{ username }}"
         password: "{{ password }}"
         state: present
-    
+
     - name: "Create Operating System Architecture x86_64"
       theforeman.foreman.architecture:
         name: "x86_64"
@@ -89,7 +92,10 @@
     - name: "Copy RedHat Manifest to Foreman Server"
       ansible.builtin.copy:
         src: "files/manifest.zip"
-        dest: "/tmp/manifest.zip"
+        dest: "/root/manifest.zip"
+        mode: "0400"
+        owner: "root"
+        group: "root"
 
     - name: "Upload the RedHat Developer Subscription for Individuals"
       theforeman.foreman.subscription_manifest:
@@ -123,7 +129,7 @@
         - label: "rhel-9-for-x86_64-baseos-rpms"
           repositories:
             - releasever: "9"
-      
+
     - name: "Sync Repository RHEL 9"
       theforeman.foreman.repository_sync:
         username: "{{ username }}"
@@ -195,7 +201,7 @@
         content_view: "Default Organization View"
         compute_resource: "libvirt"
         provision_method: "build"
-        ptable: "Kickstart default" 
+        ptable: "Kickstart default"
         pxe_loader: "PXELinux BIOS"
         root_pass: "{{ root_password }}"
         compute_profile: "1-Small"
@@ -215,4 +221,3 @@
         hostgroup: "Red Hat Enterprise Linux 9"
         subnet: "foreman"
       changed_when: false
-          
