@@ -1,16 +1,15 @@
 ---
 - name: Install Foreman Server with Katello
-  hosts: foreman-server
+  hosts: foremanserver
   become: true
   gather_facts: true
+  roles:
+    - theforeman.operations.foreman_repositories 
+    - theforeman.operations.puppet_repositories
+    - theforeman.operations.installer
  
-    #  pre_tasks:
-    #    - name: Install Foreman SELinux Package
-    #      ansible.builtin.dnf:
-    #        name: foreman-selinux
-    #        state: present
   tasks:
-    - name: "Setup Dns-Proxy for Domain"
+    - name: "Setup DNS-Proxy for Domain"
       theforeman.foreman.domain:
         name: "localdomain"
         description: "localdomain"
@@ -79,39 +78,6 @@
         password: "{{ password }}"
         state: present
     
-          #    - name: "Create Directory /var/www/html/pub/ubuntu"
-          #      ansible.builtin.file:
-          #        path: "/var/www/html/pub/ubuntu"
-          #        state: directory
-          #        mode: "0755"
-          #
-          #    - name: "Download Ubuntu 24.04 LTS iso"
-          #      ansible.builtin.get_url:
-          #        url: "https://releases.ubuntu.com/noble/ubuntu-24.04.1-live-server-amd64.iso" 
-          #        dest: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
-          #        mode: "0755"
-          #    
-          #    - name: "Mount Ubuntu Iso"
-          #      ansible.posix.mount:
-          #        src: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
-          #        path: "/var/www/html/pub/ubuntu/24.04.1-amd64"
-          #        fstype: "iso9660"
-          #        opts: ro,noauto
-          #        boot: false
-          #        state: mounted
-          #
-          #    - name: "Create Symlink for ISO"
-          #      ansible.builtin.file:
-          #        src: "/var/www/html/pub/ubuntu/24.04.1-amd64.iso"
-          #        dest: "/var/www/html/pub/ubuntu/24.04.1-x86_64.iso"
-          #        state: link
-          #  
-          #    - name: "Create Symlink for Directory"
-          #      ansible.builtin.file:
-          #        src: "/var/www/html/pub/ubuntu/24.04.1-amd64"
-          #        dest: "/var/www/html/pub/ubuntu/24.04.1-x86_64"
-          #        state: link
-
     - name: "Create Operating System Architecture x86_64"
       theforeman.foreman.architecture:
         name: "x86_64"
@@ -165,8 +131,8 @@
         server_url: "{{ server_url }}"
         product: "Red Hat Enterprise Linux for x86_64"
         organization: "{{ organization }}"
+      changed_when: false
 
-    
     - name: "Create Activation Key for RHEL9"
       theforeman.foreman.activation_key:
         username: "{{ username }}"
@@ -190,106 +156,6 @@
         architecture: "x86_64"
         activation_keys: "Red Hat Enterprise Linux 9"
         state: present
-        
-
-          #    - name: "Create Operating System Ubuntu 24.04.1"
-          #      theforeman.foreman.operatingsystem:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        architectures: 
-          #          - "x86_64"
-          #        name: "Ubuntu"
-          #        release_name: "noble"
-          #        family: "Debian"
-          #        major: "24.04"
-          #        minor: "1"
-          #        description: "Ubuntu Noble Numbat Test"
-          #        password_hash: "SHA256"
-          #        ptables:
-          #          - "Preseed default autoinstall"
-          #        provisioning_templates: 
-          #          - "Preseed default finish"
-          #          - "Linux host_init_config default"
-          #          - "Preseed default iPXE"
-          #          - "Preseed default PXEGrub2"
-          #          - "Preseed default PXELinux Autoinstall"
-          #          - "Preseed Autoinstall cloud-init user data"
-          #        state: "present"
-          #
-          #    - name: "Create Installation Medium for Ubuntu 24.04.1"
-          #      theforeman.foreman.installation_medium:
-          #        name: "Ubuntu Autoinstall 2"
-          #        operatingsystems: 
-          #          - "Ubuntu Noble Numbat Test"
-          #        path: "http://foreman.localdomain/pub/ubuntu/$major.$minor-$arch"
-          #        os_family: "Debian"
-          #        organizations:
-          #          - "Netways"
-          #        server_url: "https://foreman.localdomain"
-          #        username: "admin"
-          #        password: "admin"
-          #        state: "present"
-
-          #    - name: "Create Association for Finish"
-          #      theforeman.foreman.os_default_template:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        template_kind: "finish"
-          #        provisioning_template: "Preseed default finish"
-          #        state: "present"
-
-          #    - name: "Create Association for Host initial configuration template"
-          #      theforeman.foreman.os_default_template:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        template_kind: "host_init_config"
-          #        provisioning_template: "Linux host_init_config default"
-          #        state: "present"
-          #
-          #    - name: "Create Association for iPXE template"
-          #      theforeman.foreman.os_default_template:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        template_kind: "iPXE"
-          #        provisioning_template: "Preseed default iPXE"
-          #        state: "present"
-          #
-          #    - name: "Create Association for PXEGrub2 template"
-          #      theforeman.foreman.os_default_template:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        template_kind: "PXEGrub2"
-          #        provisioning_template: "Preseed default PXEGrub2"
-          #        state: "present"
-          #          
-          #    - name: "Create Association for PXELinux template"
-          #      theforeman.foreman.os_default_template:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        template_kind: "PXELinux"
-          #        provisioning_template: "Preseed default PXELinux Autoinstall"
-          #        state: "present"
-          #
-          #    - name: "Create Association for User data template"
-          #      theforeman.foreman.os_default_template:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        template_kind: "user_data"
-          #        provisioning_template: "Preseed Autoinstall cloud-init user data"
-          #        state: "present"
 
     - name: "Update Compute Profile 1-Small"
       theforeman.foreman.compute_profile:
@@ -312,9 +178,7 @@
                   network: "foreman"
                   bridge: "virbr1"
                   interface: "virtio"
-                  
 
-          
     - name: "Create Test Host"
       theforeman.foreman.host:
         username: "{{ username }}"
@@ -341,11 +205,6 @@
           cpus: "4"
           memory: "4294967296"
           start: "1"
-            #volumes_attributes: 
-            #  - pool_name: "default"
-            #    capacity: "10G"
-            #    allocation: "0G"
-            #    format_type: "qcow2" 
         interfaces_attributes:
           - type: "interface"
             compute_attributes:
@@ -355,36 +214,5 @@
         state: present
         hostgroup: "Red Hat Enterprise Linux 9"
         subnet: "foreman"
+      changed_when: false
           
-          #    - name: "Create Test Host"
-          #      theforeman.foreman.host:
-          #        username: "admin"
-          #        password: "admin"
-          #        server_url: "https://foreman.localdomain"
-          #        location: "Default Location"
-          #        organization: "Netways"
-          #        name: "test-ubuntu.localdomain"
-          #        build: true
-          #        architecture: "x86_64"
-          #        content_source: "foreman.localdomain"
-          #        compute_resource: "libvirt"
-          #        provision_method: "build"
-          #        operatingsystem: "Ubuntu Noble Numbat Test"
-          #        ptable: "Preseed default autoinstall" 
-          #        pxe_loader: "PXELinux BIOS"
-          #        domain: "localdomain"
-          #        compute_attributes:
-          #          cpus: "4"
-          #          memory: "4294967296"
-          #          start: "1"
-          #            #volumes_attributes: 
-          #            #  - pool_name: "default"
-          #            #    capacity: "10G"
-          #            #    allocation: "0G"
-          #        state: present
-          #        subnet: "foreman"
-    
-  roles:
-    - theforeman.operations.foreman_repositories 
-    - theforeman.operations.puppet_repositories
-    - theforeman.operations.installer

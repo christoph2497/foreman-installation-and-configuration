@@ -4,6 +4,7 @@ username: "admin"
 password: "admin"
 server_url: "https://foreman.localdomain"
 organization: "Netways"
+root_password: "12345abc"
 
 foreman_repositories_version: "3.12"
 foreman_repositories_katello_version: "4.14"
@@ -29,5 +30,6 @@ foreman_installer_options:
   - '--foreman-initial-admin-password admin'
   - '--tuning "development"'
   - '--enable-foreman-compute-libvirt'
-    # foreman_proxy_certs_generate_fqdn: "{{ ansible_fqdn }}"
-
+  - '--enable-foreman-plugin-remote-execution'
+  - '--enable-foreman-proxy-plugin-remote-execution-script'
+foreman_installer_verbose: false
