@@ -1,6 +1,6 @@
 # Playbook for installation and configuration of Foreman
 
-This ansible playbook installs a full foreman-katello scenario. The added features are 
+This ansible playbook installs a full Foreman-Katello scenario. The added features are 
 - TFTP
 - DNS
 - DHCP
@@ -22,13 +22,14 @@ All variables regarding the installation and configuration-process are set in `g
 ## Prerequisites
 
 To use this playbook make sure that the collections from the `requirements.yml` file are installed
+The used collections are `theforeman.foreman`, `theforeman.operations` and  `ansible.posix`
 
-
+Use this command to install them if they are not installed yet
 ```
 ansible-galaxy install -r requirements.yml
 ```
 ##
-Also make sure to replace `foreman.localdomain` with your own hostname in the `hosts.yml`
+Also make sure to replace `foreman.localdomain` with your own hostname in the `hosts.yml` 
 
 ```yaml
 ---
@@ -36,6 +37,9 @@ foremanserver:
   hosts:
     your.hostname
 ```
+Keep in mind that you have to rename the file under `/host_vars` accordingly to the host name you set in `hosts.yml`
+
+
 ##
 Don't forget to put your Red Hat manifest file under `files`. It's important that you name it `manifest.zip` otherwise the playbook won't recognize your manifest file.
 
@@ -46,10 +50,13 @@ Don't forget to put your Red Hat manifest file under `files`. It's important tha
 ##
 You will also need to create a new ssh-key pair and place it in the `files` directory
 Keep in mind that you name your public key `id_rsa.pub` and your private key `id_rsa` otherwise it won't work.
+
 ```
 ssh-keygen -t rsa
 ```
+If you want to use another encritpion algorithm, you need to adjust the playbook accordingly!
 
+##
 Your files directory should now look like this
 
 ```
@@ -94,6 +101,8 @@ All variables are set in either in the `group_vars` or in the `host_vars`
 | `server_url`    | `String` | URL of the Foreman server |
 | `organization`  | `String` | The name of the organization |
 | `root_password` | `String` | The root password that is set for the provisioned host |
+
+`username`, `password` and `organization` need to match with the values set in `foreman_installer_options`
 
 ## Run the playbook
 
