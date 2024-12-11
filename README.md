@@ -1,14 +1,107 @@
-# foreman-installation-and-configuration
+# Playbook for installation and configuration of Foreman
+
+This ansible playbook installs a full foreman-katello scenario. The added features are 
+- TFTP
+- DNS
+- DHCP
+- libvirt as Compute Resource
+- Remote Execution
 
 
+As part of the playbook there will also be created a test-vm with rhel9 as os. 
+> [!WARNING]
+> A redhat manifest is needed to handle the subscription process.
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+The playbook uses `host_vars` and `group_vars` and it always runs for the group `foremanserver`
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
-## Add your files
+All variables regarding the installation and configuration-process are set in `group_vars/foremanserver.yml`
+
+## Prerequisites
+
+To use this playbook make sure that the collections from the `requirements.yml` file are installed
+
+
+```
+ansible-galaxy install -r requirements.yml
+```
+
+Also make sure to replace `foreman.localdomain` with your own hostname in the `hosts.yml`
+
+make sure to put your Red Hat manifest file under `files` and name it `manifest.zip`
+
+You will also need to create a new ssh-key pair and place it in the `files` directory
+
+```
+ssh-keygen -t rsa
+```
+
+Your files directory should now look like this
+
+```
+├── files
+│   ├── manifest.zip
+│   ├── id_rsa
+│   └── id_rsa.pub
+```
+
+## File Stucture 
+
+The file structure of the project should look like this
+
+```
+├── files
+│   ├── host.localdomain.pub
+│   ├── id_rsa
+│   └── id_rsa.pub
+├── group_vars
+│   └── foremanserver.yml
+├── hosts.yml
+├── host_vars
+│   └── foreman.localdomain.yml
+├── playbook.yml
+├── README.md
+└── requirements.yml
+
+```
+
+
+## Variables
+
+All variables are set in either in the `group_vars` or in the `host_vars`
+
+| Variable | Type  | Description |
+| ---------| ----- | ---------|
+| `foreman_repositories_version` | `String` | Version of Foreman to setup repositories for |
+| `foreman_repositories_katello_version` | `String` | Version of Katello to setup repositories |
+| `foreman_puppet_repositories_version` | `String` | Version of puppet to setup repositories |
+| `username`      | `String` | Username accessing the Foreman server |
+| `password`      | `String` | Password of the user accessing the Foreman server. |
+| `server_url`    | `String` | URL of the Foreman server |
+| `organization`  | `String` | The name of the organization |
+| `root_password` | `String` | The root password that is set for the provisioned host |
+
+## Run the playbook
+
+To run the playbook run the following command after you satisified all requirements
+
+```bash
+ansible-playbook -i hosts.yml playbook.yml
+```
+
+## Examples
+
+### Example host inventory
+```yaml
+---
+foremanserver:
+  hosts:
+    foreman.localdomain
+```
+
+### Example group_vars.yml
+
 
 - [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
 - [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
